@@ -42,7 +42,7 @@ public class Server {
         
         //connect four layout
 		BufferedReader bufferedReader = 
-				new BufferedReader(new FileReader("CONNECT_FOUR/connect_four_board.txt"));
+				new BufferedReader(new FileReader("src/connect_four_client_server/c4"));
         
         try{
 			client1 = server.accept(); //accepts connection to client1, player1
@@ -55,11 +55,15 @@ public class Server {
 			
 			//for reading and writing
 			outClient1 = new PrintWriter(client1.getOutputStream(), true); //to write to the client
-			//inputClient1 = new BufferedReader(new InputStreamReader(client1.getInputStream())); //to read from client
+			inputClient1 = new BufferedReader(new InputStreamReader(client1.getInputStream())); //to read from client
 			
 			//for reading and writing
 			outClient2 = new PrintWriter(client2.getOutputStream(), true); //to write to the client
-			//inputClient2 = new BufferedReader(new InputStreamReader(client2.getInputStream())); //to read from client
+			inputClient2 = new BufferedReader(new InputStreamReader(client2.getInputStream())); //to read from client
+			
+			//****************************************
+			/*WHEN BOARD IS /POPULATED AND DISPLAYED*/
+			//****************************************
 			
 			//assigning values to players
 			String PL1 = "X";
@@ -70,7 +74,6 @@ public class Server {
 			//display when players have connected
 			outClient1.println(PL1 + " Player 1 has connected"); outClient2.println(PL2 + " Player 2 has connected");
 			
-
 			
 			//output the c4 board
 			while((line = bufferedReader.readLine()) != null) {temps.add(line);} 
@@ -80,27 +83,32 @@ public class Server {
             //String array to display the board
             String[] tempsArray = temps.toArray(new String[0]); 
             
-            for(int i = 0;i<1;i++){ //rows
-	            for (int j = 0;j<5;j++){ //cols
-	                board[i][j] = tempsArray[j]; 
-	                outClient1.println(board[i][j]);
-	            }
-            }
-            
-            
 			//populate the board with '-'
-			for (int row = 0; row < board.length; row++) { 
-				for (int col = 0; col < board[row].length; col++) { 
+			for (int row = 0; row < 6; row++) { 
+				for (int col = 0; col < 5; col++) { 
 					board[row][col] = tempsArray[col]; 
-					outClient1.println(board[row][col]);} }
-            
-            
-//            for (String s : tempsArray) {
-//              outClient1.println(s);
-//              outClient2.println(s);
-//            }
+					outClient1.println(board[row][col]);
+					outClient2.println(board[row][col]);
+				} 
+			}
+            //********************************
+			/*WHEN COLUMN NUMBER IS RECIEVED*/
+			//********************************
 			
-			//String input = inputClient1.readLine(); //client input
+			int input = inputClient1.read(); //user input column
+			
+			//Update board with new input
+			for (int row = 0; row < 6; row++) { 
+				for (int col = 0; col < 8; col++) { 
+					board[row][col] = tempsArray[col]; 
+					outClient1.println(board[row][col]);
+					outClient2.println(board[row][col]);
+				} 
+			}
+			
+			
+			
+			
 			while(c){}
 			
 
