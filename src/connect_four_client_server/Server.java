@@ -1,19 +1,17 @@
 package connect_four_client_server;
 
 /*
- * http://stackoverflow.com/questions/19844649/java-read-file-and-store-text-in-an-array
+ * 12/11/2016
+ * David F Greene
+ * Connect Four, Server class
  */
 
-
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.*;
+import java.net.*;
 
 public class Server {
 	
-	//Create a public static PORT and IP for the server.
-	
+	//create a public static PORT and IP for the server.
     final static int PORT = 80; //port number
     public static Socket client1; //connection to server
     public static Socket client2; //connection to server
@@ -22,9 +20,8 @@ public class Server {
     public static DataOutputStream client2writer;
     public static DataInputStream client1reader;
     public static DataInputStream client2reader;
-    
+    //global variables
     public static int ROWS = 6;
-    public static int lastCol = -1, lastTop = -1;
     public static int COLS = 7;
     public static char[][] board = new char[ROWS][COLS];
 	public static int[] columnHeight = new int[COLS]; //height of column
@@ -32,19 +29,19 @@ public class Server {
     
     public static void main(String[] args) throws IOException{
     	
-        System.out.println("Connecting to client../."); //update message
+        System.out.println("Connecting to client..."); //update message
         server = new ServerSocket(PORT); //server socket
         
         try{
 			client1 = server.accept(); //accepts connection to client1, player1
 			System.out.println("Connection successful to PLAYER1"); //update message
-            client1writer = new DataOutputStream(client1.getOutputStream()); //to write to client
-            client1reader = new DataInputStream(client1.getInputStream()); //to read from client
+            client1writer = new DataOutputStream(client1.getOutputStream()); //to write to Client
+            client1reader = new DataInputStream(client1.getInputStream()); //to read from Client
             
 			client2 = server.accept(); //accepts connection to client2, player2
 			System.out.println("Connection successful to PLAYER2"); //update message
-			client2writer = new DataOutputStream(client2.getOutputStream()); //to write to client
-			client2reader = new DataInputStream(client2.getInputStream()); //to read from client
+			client2writer = new DataOutputStream(client2.getOutputStream()); //to write to Client
+			client2reader = new DataInputStream(client2.getInputStream()); //to read from Client
 			
 			//assign players
 			int PL1 = 1, PL2 = 2;
@@ -52,23 +49,21 @@ public class Server {
 			
 			int col, playerCount = 0;
 			
-			for (int i=0; i<42; i++) {
+			for (int i=0; i<(ROWS*COLS); i++) { //loops 42 times for every slot on the board 6*7
 				//using mod to determine which player is next
             	client1writer.writeInt((playerCount % 2) + 1); 
             	client2writer.writeInt((playerCount % 2) + 1);
             	
-            	//Server output for which player is waiting and what move they make
+            	//server output for which player is waiting and what move they make
             	if (playerCount%2 == 0) {
-            		System.out.println("Waiting for player 1 to make a move...");
             		col = client1reader.readInt(); //reads input for column         		
             		update(col, 'X'); //calls the update method
-            		System.out.println("Player 1 moved to " +(col+1));
+            		System.out.println("Player 1 chooses Column " +(col+1));
             		client2writer.writeInt(col); //updates player 2 board
             	} else {
-            		System.out.println("Waiting for player 2 to make a move...");
             		col = client2reader.readInt(); //reads input for column
             		update(col, 'O'); //calls the update method
-            		System.out.println("Player 2 moved to " + (col+1));
+            		System.out.println("Player 2 chooses Column " + (col+1));
             		client1writer.writeInt(col); //updates player 1 boards
             	}
             	playerCount++; //increments players turn
@@ -76,7 +71,7 @@ public class Server {
 			
     }catch (IOException IOex){
     	System.err.println("Something went wrong");
-    	//Closing everything
+    	//closing everything
         client1.close(); client2.close(); server.close(); client1writer.close(); 
         client2writer.close(); client1reader.close(); client2reader.close(); System.exit(0); 
     }

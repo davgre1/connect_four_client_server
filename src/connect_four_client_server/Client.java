@@ -1,24 +1,28 @@
 package connect_four_client_server;
 
+/*
+ * 12/11/2016
+ * David F Greene
+ * Connect Four, Client class
+ */
+
 import java.io.*;
-import java.net.Socket;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.net.*;
+import java.util.*;
 
 public class Client {
 
 	public static Socket client; //players
-    public static BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in)); //track user input
-    public static PrintWriter outServer; //to write
     public static DataInputStream serverInput;
     public static DataOutputStream serverOutput;
     public static final String HOST = "localhost"; //localhost
     public static final int PORT = 80; //port number
-    public static int input; //takes user input
-    public static String is; //input receiver
-    public static Boolean x;
-    public static char[] symbol = new char[] { 'X', 'O' };
-    public static Scanner scan = new Scanner(System.in);
+    
+    public static String numColumn; //which column the players choose
+    public static int col; //place holder for numColumn after parsed
+    public static int nextPlayer; //use to compare the player to the nextPlayer
+    public static boolean validation; //used to valid the players moves
+    public static Scanner keyboard = new Scanner(System.in);
     
     
 public static void main(String[] args){
@@ -26,21 +30,16 @@ public static void main(String[] args){
         System.out.println("Connecting to server..."); //update message
         try{
 			client = new Socket(HOST, PORT); //IP and Port number
-			serverInput = new DataInputStream(client.getInputStream()); //read input from server
-			serverOutput = new DataOutputStream(client.getOutputStream());
+			serverInput = new DataInputStream(client.getInputStream()); //to read from Server
+			serverOutput = new DataOutputStream(client.getOutputStream()); //to write to Server
 			
-			System.out.println("Connection successful to SERVER!");
-			System.out.println("Connect Four");//column message
+			System.out.println("Connection successful to SERVER!"); //connection is true
+			System.out.println("Connect Four"); //message
 			
-			int player = serverInput.readInt();
+			int player = serverInput.readInt(); //first player connected
 			
-			Server.board(); //calls board method in Server class
-			System.out.println("Player " + player); //read player
-			
-			  String move;		// # of column to drop piece into
-		      int col;			// Value of move as an int
-		      int currentPlayer;	// Current player's turn
-		      boolean valid;		// Determines if the input from the user can be a valid move
+			Server.board(); //calls board method in Server
+			System.out.println("Player " + player); //read player in
 		        
 			
 //			//DISPLAY BOARD
@@ -53,46 +52,40 @@ public static void main(String[] args){
 //			}
 		      
 		      
-		      for (int i=0; i<42; i++) {
-	            	// Determine's who's turn it is (passed in from server)
-	            	currentPlayer = serverInput.readInt();
+		      for (int i=0; i<42; i++) { //loops 42 times for every slot on the board 6*7
 	            	
-	            	// Takes a turn
-	            	if (currentPlayer == player) {
-	            		valid = false;	// Makes valid false at the beginning of each turn
-	            		while (valid == false) {
-	                		System.out.println("Enter a column  0-6: ");
-	                		move = scan.nextLine();		// Gets input from user as a String
-	                		if (move.matches("[1-7]{1}") == true) {		// Checks to see if input is a valid column
-	                			col = Integer.parseInt(move)-1;
-	                			if (Server.columnHeight(col) < 6) {	// Checks to see if column entered is full
-	                				Server.update(col, 'X');		// Updates current player's board
-	                				serverOutput.writeInt(col);			// Sends move to server to update other player's board
-	                				System.out.println("Sending move to server.");
-	                				valid = true;	// Makes valid true to end loop
+	            	nextPlayer = serverInput.readInt(); //Server passes who's turn it is
+	            	
+	            	if (nextPlayer == player) {
+	            		validation = false;	//validation is false at the start
+	            		while (validation == false) {
+	                		System.out.print("Enter a column  0-6: ");
+	                		numColumn = keyboard.nextLine(); //gets column number
+	                		if (numColumn.matches("[1-7]{1}") == true) { //regular expression for validation of input
+	                			col = Integer.parseInt(numColumn)-1; //changes String to int
+	                			if (Server.columnHeight(col) < 6) {	//check column height
+	                				Server.update(col, 'X'); //calls update method
+	                				serverOutput.writeInt(col); //send column number to Server
+	                				System.out.println("Sending to server.");
+	                				validation = true;	//validation is true at the end
 	                			} else {
-	                				System.out.println("Column " + (col+1) + " is full.");
-	                				valid = false;	// Makes valid false to loop until a legal move is entered
+	                				System.out.print("Column " + (col+1) + " is full, ");
+	                				validation = false;	//if column is full
 	                			}
 	                		} else {
-	                			System.out.println("Enter a column between 1 and 7.");
-	            				valid = false;		// Makes valid false to loop until a legal move is entered
+	                			System.out.print("Incorrect value,");
+	            				validation = false; //if not a valid number
 	                		}
-	                    }  //loops while move is invalid	
+	                    }	
 	            	} else {
-	            		// Lets other player go
-	            		System.out.println("Waiting for other player");
-	            		col = serverInput.readInt();
-	            		Server.update(col, 'O');
-	            		System.out.println("Other player moved in column " + (col+1) + ".");
+	            		//while other players are waiting
+	            		System.out.println("Waiting on other player");
+	            		col = serverInput.readInt(); //reads from Server
+	            		Server.update(col, 'O'); //calls update method
+	            		System.out.println("Other player choose Column " + (col+1));
 	            	}           	
-	            	Server.board();	// Prints board after a move by either player is made
+	            	Server.board(); //prints new updated board
 	            }
-		      
-		      
-		      
-		      
-		      
 		      
 //			try{
 //				do{
@@ -116,11 +109,9 @@ public static void main(String[] args){
 //		        System.out.println("THIS IS NOT A VALID MOVE"); //if letter or special characters are input
 //		        //keyboard.readLine();
 //		    }
-            
+            keyboard.close(); client.close();//closing everything
         }catch(IOException IOex){
-            System.err.println("Error connecting to server."); //if can not connect to the server
+            System.err.println("Error connecting to server."); //cannot connect to the server
         }
     }
-
-		
 }
